@@ -1,0 +1,24 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Secrets
+.env
+
+# Generated output and customer data: never commit a customer's database,
+# exports, quotes or run state
+output/
+data/
+*.mdb
+*.accdb
+*.sqlite
+*.xlsx
+customers/*.toml
+!customers/demo.toml
+!customers/*.example.toml
+
+# Editors and tools
+.vscode/
+.wrangler/
