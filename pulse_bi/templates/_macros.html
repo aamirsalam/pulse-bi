@@ -1,0 +1,29 @@
+{# Small helpers shared by the dashboard section templates. #}
+
+{% macro qty(value) -%}
+{{ ('%.3f'|format(value)).rstrip('0').rstrip('.') }}
+{%- endmacro %}
+
+{% macro ageing_bar(buckets, total) %}
+{% if total > 0 %}
+<div class="ageing-bar" role="img" aria-label="{% for b in buckets %}{{ b.label }} {{ cur }}{{ b.amount|inr }}{{ ', ' if not loop.last }}{% endfor %}">
+    {% for b in buckets %}{% if b.amount > 0 %}
+    <div class="ageing-part ageing-{{ loop.index }}" style="width: {{ '%.2f'|format(b.amount / total * 100) }}%"></div>
+    {% endif %}{% endfor %}
+</div>
+<div class="ageing-legend">
+    {% for b in buckets %}
+    <span><i class="ageing-dot ageing-{{ loop.index }}"></i>{{ b.label }}: {{ cur }}{{ b.amount|inr }}</span>
+    {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro change_badge(value, points=False) -%}
+{%- if value is defined and value is not none -%}
+<span class="change {{ 'change-up' if value > 0.05 else ('change-down' if value < -0.05 else 'change-flat') }}">
+    {{ '▲' if value > 0.05 else ('▼' if value < -0.05 else '■') }}
+    {{ "{:.1f}".format(value|abs) }}{{ ' pts' if points else '%' }}
+</span>
+{%- endif -%}
+{%- endmacro %}

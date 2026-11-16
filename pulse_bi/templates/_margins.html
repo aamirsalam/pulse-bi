@@ -1,0 +1,75 @@
+{% from "_macros.html" import qty, ageing_bar %}
+
+{# ---------------------------------------------------------------- Margins #}
+{% set m = insights.margins %}
+<section class="section" id="margins">
+    <div class="section-title-row">
+        <h2>Margin Watch</h2>
+        <span class="muted">{{ insights.comparison.label }}</span>
+    </div>
+    {% if m.ignored_before %}
+    <p class="empty">Bills before {{ m.ignored_before.strftime("%d %b") }} are left out: stock and prices were still being set up.</p>
+    {% endif %}
+
+    <h3 class="control-label">Sold below cost</h3>
+    {% if m.loss_items %}
+    <p class="empty">{{ cur }}{{ m.loss_total|inr }} lost on these items. Check the selling price, and the purchase rate in
+        {{ source_label }}, since a wrong cost shows up here too.</p>
+{% macro loss_row(item) %}
+        <div class="list-row">
+            <div class="list-main">
+                <div class="list-name">{{ item.name }}</div>
+                <div class="list-meta">{{ qty(item.qty) }} sold at {{ cur }}{{ item.avg_price|inr(2) }} on average, cost
+                    {{ cur }}{{ item.unit_cost|inr(2) }} (before {{ tax_name }})</div>
+            </div>
+            <div class="list-side">
+                <div class="list-value profit-negative">−{{ cur }}{{ (-item.profit)|inr }}</div>
+                <div class="list-meta">{{ ('%.1f'|format(item.margin)).replace("-", "−") }}%</div>
+            </div>
+        </div>
+{% endmacro %}
+    <div class="list">
+        {% for item in m.loss_items[:5] %}{{ loss_row(item) }}{% endfor %}
+    </div>
+    {% if m.loss_items|length > 5 %}
+    <details class="more">
+        <summary>Show all {{ m.loss_items|length }} items</summary>
+        <div class="list">
+            {% for item in m.loss_items[5:] %}{{ loss_row(item) }}{% endfor %}
+        </div>
+    </details>
+    {% endif %}
+    {% else %}
+    <p class="empty">No item sold below cost in this period.</p>
+    {% endif %}
+
+    <h3 class="control-label">Low margin, under {{ m.low_margin_percent }}%</h3>
+    {% if m.low_items %}
+{% macro low_row(item) %}
+        <div class="list-row">
+            <div class="list-main">
+                <div class="list-name">{{ item.name }}</div>
+                <div class="list-meta">{{ qty(item.qty) }} sold at {{ cur }}{{ item.avg_price|inr(2) }} on average, cost
+                    {{ cur }}{{ item.unit_cost|inr(2) }}</div>
+            </div>
+            <div class="list-side">
+                <div class="list-value">{{ ('%.1f'|format(item.margin)).replace("-", "−") }}%</div>
+                <div class="list-meta">{{ cur }}{{ item.profit|inr }} profit</div>
+            </div>
+        </div>
+{% endmacro %}
+    <div class="list">
+        {% for item in m.low_items[:5] %}{{ low_row(item) }}{% endfor %}
+    </div>
+    {% if m.low_items|length > 5 %}
+    <details class="more">
+        <summary>Show all {{ m.low_items|length }} items</summary>
+        <div class="list">
+            {% for item in m.low_items[5:] %}{{ low_row(item) }}{% endfor %}
+        </div>
+    </details>
+    {% endif %}
+    {% else %}
+    <p class="empty">No low-margin items in this period.</p>
+    {% endif %}
+</section>

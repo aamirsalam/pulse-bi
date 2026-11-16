@@ -1,0 +1,46 @@
+{# Top products for the chosen period, sortable (script in dashboard.html). #}
+        <div class="section" id="top-products-section">
+            <div class="section-header">
+                <h2>Top Products</h2>
+                <span class="section-subtitle">
+                    {% if static_site %}Snapshot from the last publish{% else %}Live from {{ source_label }}{% endif %}
+                </span>
+            </div>
+
+            <p class="empty">
+                {{ insights.comparison.label if insights else "All time" }}. Change the period at the top of the page.
+            </p>
+
+            <div class="control-label" id="sort-label">Sort by</div>
+
+            <div class="product-controls" role="group" aria-labelledby="sort-label">
+                <button type="button" class="product-sort active" data-sort="sales_value">
+                    Sales
+                </button>
+                <button type="button" class="product-sort" data-sort="qty_sold">
+                    Quantity
+                </button>
+                <button type="button" class="product-sort" data-sort="profit">
+                    Profit
+                </button>
+            </div>
+
+            <div id="top-products-list" class="top-products-list">
+                {% for product in top_products %}
+                <div class="product-row" data-product="{{ product.product }}"
+                    data-sales="{{ product.sales_value|float }}" data-qty="{{ product.qty_sold|float }}"
+                    data-profit="{{ product.profit|float }}"
+                    data-cost-incomplete="{{ 'yes' if product.cost_incomplete else '' }}">
+                    <div class="product-info">
+                        <div class="product-name">{{ product.product }}</div>
+                        <div class="product-meta">
+                            {{ product.qty_sold }} units sold
+                        </div>
+                    </div>
+                    <div class="product-value">
+                        {{ cur }}{{ product.sales_value|inr }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>

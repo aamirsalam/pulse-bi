@@ -1,0 +1,28 @@
+{# Summary tiles linking to the sections below. #}
+{% set a = insights.attention %}
+
+<section class="section">
+    <h2>Needs Attention</h2>
+    <div class="attention-grid">
+        <a class="attention {% if a.reorder %}warn{% endif %}" href="#reorder">
+            <span class="attention-value">{{ a.reorder }}</span>
+            <span class="attention-label">items to reorder</span>
+            {% if a.out_of_stock %}<span class="attention-detail">{{ a.out_of_stock }} already out</span>{% endif %}
+        </a>
+        <a class="attention {% if a.loss_items %}bad{% endif %}" href="#margins">
+            <span class="attention-value">{{ a.loss_items }}</span>
+            <span class="attention-label">items sold below cost</span>
+            {% if a.loss_items %}<span class="attention-detail">{{ cur }}{{ a.loss_total|inr }} lost</span>{% endif %}
+        </a>
+        <a class="attention {% if a.receivable_over_30 %}warn{% endif %}" href="#customers">
+            <span class="attention-value">{{ cur }}{{ a.receivable|inr }}</span>
+            <span class="attention-label">owed by customers</span>
+            {% if a.receivable_over_30 %}<span class="attention-detail">{{ cur }}{{ a.receivable_over_30|inr }} over 30 days</span>{% endif %}
+        </a>
+        <a class="attention {% if a.dead_value %}warn{% endif %}" href="#stock-health">
+            <span class="attention-value">{{ cur }}{{ a.dead_value|inr }}</span>
+            <span class="attention-label">stock not moving</span>
+            <span class="attention-detail">{{ a.dead_count }} items</span>
+        </a>
+    </div>
+</section>

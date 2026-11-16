@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ business_name }} | Owner Dashboard</title>
+    <meta name="description" content="Stock, sales, margins and money owed for {{ business_name }}, from {{ source_label }}.">
+    <style>
+        /* Hallmark · checked: 2026-11-06 · genre: modern-minimal (inferred) · scope: app
+         * floor: 0 FAIL in the templates · fixed: 3, 4, 7a, 19, 24b, 26a, 26b, 34, 40, 48, 49a, 63, 67, 75, F1, F3, F16, F23
+         * kept: account names written "NAME - PLACE" (gate 63 reads them as labels; they are the business's own data)
+         * waive 71: the weekday head sits 8px over its bars; the measure runs to the day names under the 72px bars
+         * answered F1: the remaining straight quotes are inch marks in item names (30" PVC DOOR)
+         * answered F4: the filled buttons are the selected state of period and sort toggles, not primary actions
+         * reworded: periods end on the latest bill (matching the trend chart); whole rupees throughout; "was" hidden when the previous period is partly recorded
+         * built: the project · redesign: polish · v2.0.0 */
+
+        :root {
+            --color-ground: #f3f5f8;
+            --color-surface: oklch(98.6% 0.006 250);
+            --color-well: #f1f5f9;
+            --color-line: #e2e8f0;
+            --color-edge: #cbd5e1;
+            --color-ink: #1f2937;
+            --color-ink-soft: #475569;
+            --color-muted: #5d6b80;
+            --color-accent: #285574;
+            --color-accent-ink: oklch(98.6% 0.006 250);
+            --color-accent-soft: #9fb7c9;
+            --color-accent-tint: #e0eaf2;
+            --color-good: #15803d;
+            --color-bad: #b91c1c;
+            --color-bad-ink: #991b1b;
+            --color-bad-tint: #fef2f2;
+            --color-bad-soft: #fee2e2;
+            --color-warn: #d97706;
+            --color-warn-ink: #92400e;
+            --color-warn-tint: #fffbeb;
+            --color-warn-soft: #fef3c7;
+            --color-link: #285574;
+            --color-focus: #1d4ed8;
+            --font-body: Arial, Helvetica, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            overflow-x: clip;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: var(--font-body);
+            background: var(--color-ground);
+            color: var(--color-ink);
+        }
+
+        h1,
+        h2,
+        h3 {
+            text-wrap: balance;
+            overflow-wrap: break-word;
+            min-width: 0;
+        }
+
+        ::selection {
+            background: var(--color-accent-tint);
+            color: var(--color-ink);
+        }
+
+        html {
+            scrollbar-color: var(--color-edge) var(--color-ground);
+            caret-color: var(--color-accent);
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        a:focus-visible,
+        button:focus-visible,
+        summary:focus-visible {
+            outline: 2px solid var(--color-focus);
+            outline-offset: 2px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            margin: 0 0 4px;
+            font-size: 26px;
+        }
+
+        header p {
+            margin: 0;
+            color: var(--color-muted);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .cards {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .card {
+            padding: 16px;
+            background: var(--color-surface);
+            border-radius: 12px;
+            border: 1px solid var(--color-line);
+        }
+
+        .card-label {
+            font-size: 14px;
+            color: var(--color-muted);
+        }
+
+        .card-value {
+            margin-top: 8px;
+            font-size: clamp(18px, 3.5vw, 30px);
+            font-weight: 700;
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .card-note {
+            margin-top: 4px;
+            font-size: 12px;
+            line-height: 1.4;
+            color: var(--color-muted);
+        }
+
+        .profit-positive {
+            color: var(--color-good);
+        }
+
+        .profit-negative {
+            color: var(--color-bad);
+        }
+
+        .section {
+            margin-top: 24px;
+            padding: 20px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-line);
+            border-radius: 12px;
+        }
+
+        .section h2 {
+            margin: 0 0 12px;
+            font-size: 19px;
+        }
+
+        /* Figures inside a section sit on the section itself: one containment
+           layer, separated by a hairline instead of a second box. */
+        .section .card {
+            padding: 12px 0 0;
+            background: none;
+            border: 0;
+            border-top: 1px solid var(--color-line);
+            border-radius: 0;
+        }
+
+        .empty {
+            color: var(--color-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .error {
+            padding: 12px;
+            background: var(--color-bad-tint);
+            color: var(--color-bad-ink);
+            border-radius: 8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--color-link);
+            text-decoration: none;
+        }
+
+        @media (min-width: 650px) {
+            .cards {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
+            .cards.cards-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .cards.cards-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        /* ---- Business insights ---- */
+        .muted {
+            color: var(--color-muted);
+            font-size: 13px;
+        }
+
+        .section-title-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .section-title-row h2 {
+            margin: 0;
+        }
+
+        /* Sub-heading inside a section (was a tracked-capitals label). */
+        .control-label {
+            margin: 24px 0 8px;
+            color: var(--color-ink);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .period-nav {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            padding: 8px 0;
+            background: var(--color-ground);
+        }
+
+        .period-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 4px 8px;
+            border: 1px solid var(--color-edge);
+            border-radius: 8px;
+            background: var(--color-surface);
+            color: var(--color-ink);
+            font-size: 14px;
+            text-align: center;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .period-link.active {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: var(--color-accent-ink);
+        }
+
+        .change {
+            display: inline-block;
+            margin-right: 4px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .change-up {
+            color: var(--color-good);
+        }
+
+        .change-down {
+            color: var(--color-bad);
+        }
+
+        .change-flat {
+            color: var(--color-muted);
+        }
+
+        .weekday-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 8px;
+            text-align: center;
+        }
+
+        .weekday-track {
+            display: flex;
+            align-items: flex-end;
+            height: 72px;
+            background: var(--color-well);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .weekday-fill {
+            width: 100%;
+            background: var(--color-accent-soft);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .weekday.best .weekday-fill {
+            background: var(--color-accent);
+        }
+
+        .weekday-name {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .weekday-value {
+            font-size: 11px;
+            color: var(--color-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .attention-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @media (min-width: 650px) {
+            .attention-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        /* A tinted well, not a box: the section is the only container. */
+        .attention {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px;
+            border-radius: 8px;
+            background: var(--color-well);
+            color: var(--color-ink);
+            text-decoration: none;
+        }
+
+        .attention:active {
+            background: var(--color-line);
+        }
+
+        .attention.warn {
+            background: var(--color-warn-tint);
+        }
+
+        .attention.bad {
+            background: var(--color-bad-tint);
+        }
+
+        .attention-value {
+            font-size: 22px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
+        }
+
+        .attention.bad .attention-value {
+            color: var(--color-bad-ink);
+        }
+
+        .attention.warn .attention-value {
+            color: var(--color-warn-ink);
+        }
+
+        .attention-label,
+        .attention-detail {
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--color-ink-soft);
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--color-line);
+        }
+
+        .list-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-name {
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .list-meta {
+            margin-top: 4px;
+            color: var(--color-muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .list-side {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .list-value {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .pill-warn {
+            background: var(--color-warn-soft);
+            color: var(--color-warn-ink);
+        }
+
+        .pill-bad {
+            background: var(--color-bad-soft);
+            color: var(--color-bad-ink);
+        }
+
+        .tag {
+            display: inline-block;
+            margin-left: 4px;
+            padding: 0 4px;
+            border-radius: 4px;
+            background: var(--color-accent-tint);
+            color: var(--color-accent);
+            font-size: 12px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .share-track {
+            height: 8px;
+            margin-top: 4px;
+            background: var(--color-well);
+            border-radius: 4px;
+        }
+
+        .share-fill {
+            height: 100%;
+            background: var(--color-accent);
+            border-radius: 4px;
+        }
+
+        .ageing-bar {
+            display: flex;
+            height: 12px;
+            margin: 4px 0 8px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--color-well);
+            gap: 2px;
+        }
+
+        .ageing-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 16px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--color-ink-soft);
+        }
+
+        .ageing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-right: 4px;
+            border-radius: 2px;
+        }
+
+        .ageing-1 {
+            background: var(--color-accent);
+        }
+
+        .ageing-2 {
+            background: var(--color-warn);
+        }
+
+        .ageing-3 {
+            background: var(--color-bad);
+        }
+
+        details.more summary {
+            margin-top: 12px;
+            color: var(--color-link);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* ---- Sales trend ---- */
+        .sales-chart {
+            display: flex;
+            align-items: end;
+            gap: 4px;
+            height: 220px;
+            overflow-x: auto;
+            padding: 12px 20px;
+        }
+
+        .sales-bar {
+            min-width: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: end;
+            height: 100%;
+        }
+
+        .bar-fill {
+            width: 100%;
+            min-height: 2px;
+            background: var(--color-accent);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .bar-label {
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--color-muted);
+            white-space: nowrap;
+        }
+
+        .day-detail {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .period-link:active,
+        .product-sort:active {
+            background: var(--color-well);
+        }
+
+        .period-link.active:active,
+        .product-sort.active:active {
+            background: var(--color-accent);
+        }
+
+        /* ---- Top products ---- */
+        .product-controls {
+            display: flex;
+            gap: 8px;
+            margin: 0 0 24px;
+        }
+
+        .product-sort {
+            flex: 1;
+            min-height: 44px;
+            padding: 8px 8px;
+            border: 1px solid var(--color-edge);
+            border-radius: 8px;
+            background: var(--color-surface);
+            color: var(--color-ink);
+            font: inherit;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .product-sort.active {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: var(--color-accent-ink);
+        }
+
+        .top-products-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--color-line);
+        }
+
+        .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .product-name {
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .product-meta {
+            margin-top: 4px;
+            color: var(--color-muted);
+            font-size: 12px;
+        }
+
+        .product-value {
+            font-weight: 700;
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---- Negative stock table ---- */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--color-line);
+        }
+
+        .data-table .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .data-table .stock-negative {
+            color: var(--color-bad);
+            font-weight: 700;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .cards.cards-kpi {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .period-nav {
+                gap: 4px;
+            }
+
+            .period-link {
+                font-size: 13px;
+                padding: 4px 4px;
+            }
+
+            /* "Last 7 days" reads "7 days" on a phone so the four fit. */
+            .period-prefix {
+                display: none;
+            }
+
+            .section {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <header>
+            <h1>{{ business_name }}</h1>
+            <p>
+                Owner dashboard.
+                {% if database_checked_at %}
+                {% if static_site %}Published{% else %}Data read{% endif %}
+                {{ database_checked_at.strftime("%d %b %Y, %I:%M %p") }}.
+                {% endif %}
+            </p>
+        </header>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% else %}
+
+        {# What needs acting on comes first, then sales, then the reference
+           sections. Each section is its own template. #}
+        {% if insights %}
+        {% include "_nav.html" %}
+        {% include "_attention.html" %}
+        {% include "_reorder.html" %}
+        {% include "_sales.html" %}
+        {% include "_margins.html" %}
+        {% endif %}
+
+        {% include "_top_products.html" %}
+
+        {% if insights %}
+        {% include "_stock.html" %}
+        {% include "_customers.html" %}
+        {% include "_suppliers.html" %}
+        {% endif %}
+
+        <script>
+            const CURRENCY = {{ cur|tojson }};
+
+            // Sales by day: shows the page's period (data-days on the chart).
+            (function () {
+                const chart = document.getElementById("sales-chart");
+                const bars = Array.from(document.querySelectorAll(".sales-bar"));
+
+                if (!chart || !bars.length) return;
+
+                // Use the latest date in the available sales data, not today's date.
+                const dates = bars.map(bar => new Date(bar.dataset.date + "T00:00:00"));
+                const latestDate = new Date(Math.max(...dates.map(date => date.getTime())));
+                latestDate.setHours(0, 0, 0, 0);
+
+                // Build a date-to-bar map so days without sales can be shown as zero.
+                const barsByDate = new Map(
+                    bars.map(bar => [bar.dataset.date, bar])
+                );
+
+                function formatDate(date) {
+                    return date.toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    });
+                }
+
+                function showPeriod(days) {
+                    const startDate = new Date(latestDate);
+
+                    if (days > 0) {
+                        startDate.setDate(startDate.getDate() - days + 1);
+                    } else {
+                        startDate.setTime(Math.min(...dates.map(date => date.getTime())));
+                    }
+
+                    const visible = [];
+
+                    // Generate every calendar day in the selected range.
+                    for (
+                        let date = new Date(startDate);
+                        date <= latestDate;
+                        date.setDate(date.getDate() + 1)
+                    ) {
+                        const dateKey = [
+                            date.getFullYear(),
+                            String(date.getMonth() + 1).padStart(2, "0"),
+                            String(date.getDate()).padStart(2, "0")
+                        ].join("-");
+
+                        let bar = barsByDate.get(dateKey);
+
+                        if (!bar) {
+                            bar = document.createElement("div");
+                            bar.className = "sales-bar";
+                            bar.dataset.date = dateKey;
+                            bar.dataset.invoiceCount = "0";
+                            bar.dataset.profit = "0";
+                            bar.dataset.salesExTax = "0";
+
+                            const fill = document.createElement("div");
+                            fill.className = "bar-fill";
+                            fill.dataset.amount = "0";
+                            fill.style.minHeight = "0";
+
+                            const label = document.createElement("span");
+                            label.className = "bar-label";
+                            label.textContent = date.toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short"
+                            });
+
+                            bar.append(fill, label);
+                            chart.append(bar);
+                            barsByDate.set(dateKey, bar);
+                        }
+
+                        bar.style.display = "flex";
+                        bar.title = formatDate(date) + ": " + CURRENCY +
+                            Number(bar.querySelector(".bar-fill").dataset.amount)
+                                .toLocaleString("en-IN", { maximumFractionDigits: 0 });
+
+                        const amount = Number(
+                            bar.querySelector(".bar-fill").dataset.amount
+                        );
+
+                        visible.push({ bar, amount });
+                    }
+
+                    // Keep only the selected dates visible, in chronological order.
+                    barsByDate.forEach((bar, key) => {
+                        const date = new Date(key + "T00:00:00");
+                        if (date < startDate || date > latestDate) {
+                            bar.style.display = "none";
+                        }
+                    });
+
+                    const maxAmount = Math.max(...visible.map(item => item.amount), 1);
+
+                    visible.forEach(({ bar, amount }, index) => {
+                        const fill = bar.querySelector(".bar-fill");
+                        fill.style.height = (amount / maxAmount * 100) + "%";
+                        bar.style.order = index;
+
+                        const label = bar.querySelector("span");
+                        const showEvery = days > 0 && days <= 10 ? 1 : 5;
+                        const showLabel =
+                            index % showEvery === 0 ||
+                            index === visible.length - 1;
+
+                        label.style.visibility = showLabel ? "visible" : "hidden";
+                    });
+
+
+                    const dayDetail = document.getElementById("sales-day-detail");
+
+                    visible.forEach(({ bar, amount }) => {
+                        bar.style.cursor = "pointer";
+
+                        bar.onclick = function () {
+                            const selectedDate = new Date(
+                                bar.dataset.date + "T00:00:00"
+                            );
+
+                            const dateText = selectedDate.toLocaleDateString(
+                                "en-GB",
+                                {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric"
+                                }
+                            );
+
+                            const invoiceCount = Number(
+                                bar.dataset.invoiceCount || 0
+                            );
+
+                            const profit = Number(bar.dataset.profit || 0);
+
+                            dayDetail.style.display = "block";
+                            dayDetail.innerHTML =
+                                "<strong>" + dateText + "</strong><br>" +
+                                "Net sales: " + CURRENCY +
+                                amount.toLocaleString("en-IN", { maximumFractionDigits: 0 }) +
+                                "<br>Gross profit: " + CURRENCY +
+                                profit.toLocaleString("en-IN", { maximumFractionDigits: 0 }) +
+                                marginText(profit, Number(bar.dataset.salesExTax || 0)) +
+                                "<br>Invoice records: " + invoiceCount;
+                        };
+                    });
+
+
+                }
+
+                function marginText(profit, salesExTax) {
+                    return salesExTax
+                        ? " (" + (profit / salesExTax * 100).toFixed(1) + "% margin)"
+                        : "";
+                }
+
+                showPeriod(Number(chart.dataset.days || 0));
+            })();
+
+
+            // Top Products: sort by sales value or quantity sold.
+            (function () {
+                const list = document.getElementById("top-products-list");
+                const buttons = document.querySelectorAll(".product-sort");
+
+                if (!list || !buttons.length) return;
+
+                function sortProducts(sortBy) {
+                    const rows = Array.from(list.querySelectorAll(".product-row"));
+
+                    const sortValue = row => Number({
+                        sales_value: row.dataset.sales,
+                        qty_sold: row.dataset.qty,
+                        profit: row.dataset.profit
+                    }[sortBy]);
+
+                    rows.sort((a, b) => sortValue(b) - sortValue(a));
+
+                    rows.forEach((row, index) => {
+                        // existing value and meta updates
+                        list.appendChild(row);
+                    });
+
+                    console.log(
+                        "Top Products sort:", sortBy,
+                        rows.map(row => ({
+                            product: row.dataset.product,
+                            sales: row.dataset.sales,
+                            quantity: row.dataset.qty
+                        }))
+                    );
+
+                    const rupees = value => Number(value).toLocaleString("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                        maximumFractionDigits: 0
+                    });
+
+                    rows.forEach((row, index) => {
+                        const units = Number(row.dataset.qty).toLocaleString("en-IN") + " units";
+                        const sales = rupees(row.dataset.sales);
+                        const profit = rupees(row.dataset.profit);
+
+                        const [value, meta] = {
+                            sales_value: [sales, units + " sold, " + profit + " profit"],
+                            qty_sold: [units, sales + " sales, " + profit + " profit"],
+                            profit: [profit, units + " sold, " + sales + " sales"]
+                        }[sortBy];
+
+                        row.querySelector(".product-value").textContent = value;
+                        row.querySelector(".product-meta").textContent =
+                            meta + (row.dataset.costIncomplete
+                                ? ", some sales have no cost"
+                                : "");
+
+                        list.appendChild(row);
+                    });
+
+                    buttons.forEach(button => {
+                        button.classList.toggle(
+                            "active",
+                            button.dataset.sort === sortBy
+                        );
+                    });
+                }
+
+                buttons.forEach(button => {
+                    button.addEventListener("click", () => {
+                        sortProducts(button.dataset.sort);
+                    });
+                });
+
+                sortProducts("sales_value");
+            })();
+
+
+        </script>
+
+
+
+
+
+
+        <section class="section">
+            <h2>Negative Stock Items</h2>
+
+            {% if negative_items %}
+            <p class="empty">
+                {{ negative_items|length }} {{ "item needs" if negative_items|length == 1 else "items need" }} stock review
+            </p>
+
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Product</th>
+                            <th class="num">Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in negative_items %}
+                        <tr>
+                            <td>{{ item.code }}</td>
+                            <td>{{ item.name }}</td>
+                            <td class="num stock-negative">
+                                {{ (item.stock|round(3)|string).replace("-", "−") }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="empty">No negative-stock items found.</p>
+            {% endif %}
+        </section>
+
+        {% endif %}
+
+        {% if not static_site and web_enabled %}
+        <a class="back-link" href="/">Back to the stock finder</a>
+        {% endif %}
+    </main>
+</body>
+
+</html>

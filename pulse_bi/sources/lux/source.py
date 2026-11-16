@@ -132,9 +132,12 @@ class LuxSource(Source):
         )
 
     def checked_at(self):
-        path = self.database if self.database and os.path.exists(self.database) else None
-        if path:
-            return datetime.fromtimestamp(os.path.getmtime(path)).astimezone()
+        """When the data was saved: the .mdb's modified time (set `database`
+        alongside `sqlite` to a downloaded snapshot so this stays its time),
+        else the SQLite copy's."""
+        for path in (self.database, self.sqlite):
+            if path and os.path.exists(path):
+                return datetime.fromtimestamp(os.path.getmtime(path)).astimezone()
         return datetime.now().astimezone()
 
     def load(self):

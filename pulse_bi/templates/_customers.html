@@ -1,0 +1,82 @@
+{% from "_macros.html" import qty, ageing_bar %}
+
+{# -------------------------------------------------------------- Customers #}
+{% set cu = insights.customers %}
+{% set r = insights.receivables %}
+<section class="section" id="customers">
+    <div class="section-title-row">
+        <h2>Customers</h2>
+        <span class="muted">{{ insights.comparison.label }}</span>
+    </div>
+
+    <div class="cards cards-kpi">
+        <div class="card">
+            <div class="card-label">Named Customers</div>
+            <div class="card-value">{{ cu.named_count }}</div>
+            <div class="card-note">{{ cu.walk_in_invoices }} bills had no name</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Came Back</div>
+            <div class="card-value">{{ cu.repeat_count }}</div>
+            <div class="card-note">Bought on 2 or more days, {{ '%.0f'|format(cu.repeat_share) }}% of named sales</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Top 10 Share</div>
+            <div class="card-value">{{ '%.0f'|format(cu.top_share) }}%</div>
+            <div class="card-note">Of all sales in the period</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Owed by Customers</div>
+            <div class="card-value">{{ cur }}{{ r.total|inr }}</div>
+            <div class="card-note">{{ r.parties|length }} credit customers, as of {{ insights.today.strftime("%d %b") }}</div>
+        </div>
+    </div>
+
+    <h3 class="control-label">Top customers</h3>
+    {% if cu.top %}
+    <div class="list">
+        {% for customer in cu.top %}
+        <div class="list-row">
+            <div class="list-main">
+                <div class="list-name">{{ customer.name }}
+                    {% if customer.credit %}<span class="tag">Credit a/c</span>{% endif %}</div>
+                <div class="list-meta">{{ customer.invoices }} bills on {{ customer.visits }} day{{ 's' if customer.visits != 1 }}, last on
+                    {{ customer.last.strftime("%d %b") }}</div>
+            </div>
+            <div class="list-side">
+                <div class="list-value">{{ cur }}{{ customer.sales|inr }}</div>
+                <div class="list-meta">{{ '%.1f'|format(customer.share) }}% of sales</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="empty">Cash-bill customers are grouped by the name typed on the bill, so spelling differences
+        (e.g. JOBY and JOBTY) count as different people, and a credit customer’s cash bills are listed separately.</p>
+    {% else %}
+    <p class="empty">No sales in this period.</p>
+    {% endif %}
+
+    <h3 class="control-label">Money to collect</h3>
+    {% if r.parties %}
+    {{ ageing_bar(r.buckets, r.total) }}
+    <div class="list">
+        {% for party in r.parties %}
+        <div class="list-row">
+            <div class="list-main">
+                <div class="list-name">{{ party.name }}</div>
+                <div class="list-meta">
+                    {% if party.oldest %}Oldest unpaid bill {{ party.oldest.strftime("%d %b") }} ({% if party.days == 0 %}today{% elif party.days == 1 %}1 day{% else %}{{ party.days }} days{% endif %}){% endif %}
+                    {% if party.from_opening %}<br>Includes balance brought forward{% endif %}
+                </div>
+            </div>
+            <div class="list-side">
+                <div class="list-value">{{ cur }}{{ party.amount|inr }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="empty">Balance = credit bills minus receipts entered in {{ source_label }}. Age assumes payments clear the oldest bills first.</p>
+    {% else %}
+    <p class="empty">No customer owes anything.</p>
+    {% endif %}
+</section>

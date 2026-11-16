@@ -1,0 +1,71 @@
+{% from "_macros.html" import qty, ageing_bar %}
+
+{# -------------------------------------------------------------- Suppliers #}
+{% set su = insights.suppliers %}
+{% set pay = insights.payables %}
+<section class="section" id="suppliers">
+    <div class="section-title-row">
+        <h2>Suppliers</h2>
+        <span class="muted">{{ insights.comparison.label }}</span>
+    </div>
+
+    <div class="cards cards-2">
+        <div class="card">
+            <div class="card-label">Purchases</div>
+            <div class="card-value">{{ cur }}{{ su.total|inr }}</div>
+            <div class="card-note">Incl. {{ tax_name }}, {{ su.count }} supplier{{ 's' if su.count != 1 }}</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Owed to Suppliers</div>
+            <div class="card-value">{{ cur }}{{ pay.total|inr }}</div>
+            <div class="card-note">{{ pay.parties|length }} suppliers, as of {{ insights.today.strftime("%d %b") }}</div>
+        </div>
+    </div>
+
+    <h3 class="control-label">Biggest suppliers</h3>
+    {% if su.top %}
+    <div class="list">
+        {% for supplier in su.top %}
+        <div class="list-row">
+            <div class="list-main">
+                <div class="list-name">{{ supplier.name }}</div>
+                <div class="list-meta">{{ supplier.bills }} bill{{ 's' if supplier.bills != 1 }}</div>
+                <div class="share-track"><div class="share-fill" style="width: {{ '%.1f'|format(supplier.share) }}%"></div></div>
+            </div>
+            <div class="list-side">
+                <div class="list-value">{{ cur }}{{ supplier.amount|inr }}</div>
+                <div class="list-meta">{{ '%.0f'|format(supplier.share) }}%</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">No purchases in this period.</p>
+    {% endif %}
+
+    <h3 class="control-label">To pay</h3>
+    {% if pay.parties %}
+    {{ ageing_bar(pay.buckets, pay.total) }}
+    <details class="more">
+        <summary>Show all {{ pay.parties|length }} suppliers</summary>
+        <div class="list">
+            {% for party in pay.parties %}
+            <div class="list-row">
+                <div class="list-main">
+                    <div class="list-name">{{ party.name }}</div>
+                    <div class="list-meta">
+                        {% if party.oldest %}Oldest unpaid bill {{ party.oldest.strftime("%d %b") }} ({% if party.days == 0 %}today{% elif party.days == 1 %}1 day{% else %}{{ party.days }} days{% endif %}){% endif %}
+                        {% if party.from_opening %}<br>Includes balance brought forward{% endif %}
+                    </div>
+                </div>
+                <div class="list-side">
+                    <div class="list-value">{{ cur }}{{ party.amount|inr }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </details>
+    {% else %}
+    <p class="empty">Nothing owed to suppliers.</p>
+    {% endif %}
+</section>

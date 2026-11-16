@@ -1,0 +1,55 @@
+{% from "_macros.html" import qty, ageing_bar %}
+{% set cfg = insights.settings %}
+
+{# ---------------------------------------------------------------- Reorder #}
+{% macro reorder_row(item) %}
+        <div class="list-row">
+            <div class="list-main">
+                <div class="list-name">{{ item.name }}</div>
+                <div class="list-meta">
+                    Stock {{ qty(item.stock) }}, sold {{ qty(item.sold) }} in {{ insights.reorder.window_days }} days
+                    ({{ '%.1f'|format(item.per_day) }}/day)
+                    {% if item.last_bought %}<br>Last bought {{ item.last_bought.date.strftime("%d %b") }} from
+                    {{ item.last_bought.supplier }}{% if item.last_bought.rate %} at {{ cur }}{{ item.last_bought.rate|inr(2) }}{% endif %}{% endif %}
+                </div>
+            </div>
+            <div class="list-side">
+                {% if item.stock <= 0 %}
+                <span class="pill pill-bad">Out of stock</span>
+                {% else %}
+                <span class="pill {{ 'pill-bad' if item.days_left < 7 else 'pill-warn' }}">~{{ '%.0f'|format(item.days_left) }} days left</span>
+                {% endif %}
+                <div class="list-meta">Order ~{{ item.suggested }}</div>
+            </div>
+        </div>
+{% endmacro %}
+
+<section class="section" id="reorder">
+    <div class="section-title-row">
+        <h2>Reorder Alerts</h2>
+        <span class="muted">As of {{ insights.today.strftime("%d %b") }}</span>
+    </div>
+    <p class="empty">
+        Items with less than {{ cfg.reorder_cover_days }} days of stock left at the pace they sold over the last
+        {{ insights.reorder.window_days }} days (sold on at least {{ cfg.reorder_min_sale_days }} days, so one-off
+        orders are left out). Suggested quantity tops stock up to {{ cfg.reorder_target_days }} days of sales.
+    </p>
+
+    {% if insights.reorder['items'] %}
+    {% set rows = insights.reorder['items'] %}
+    <div class="list">
+        {% for item in rows[:5] %}{{ reorder_row(item) }}{% endfor %}
+    </div>
+    {% if rows|length > 5 %}
+    <details class="more">
+        <summary>Show all {{ rows|length }} items</summary>
+        <div class="list">
+            {% for item in rows[5:] %}{{ reorder_row(item) }}{% endfor %}
+        </div>
+    </details>
+    {% endif %}
+    </div>
+    {% else %}
+    <p class="empty">Nothing is running low.</p>
+    {% endif %}
+</section>

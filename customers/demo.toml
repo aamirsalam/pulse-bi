@@ -1,0 +1,45 @@
+# Demo customer: made-up data in demo_data/, safe to share and test with.
+# Copy this file to customers/<name>.toml for a real customer (real customer
+# files are git-ignored). Secrets go in environment variables, never here.
+
+[business]
+name = "Demo Hardware"
+currency_symbol = "₹"
+tax_name = "GST"
+
+[source]
+type = "demo"            # lux | demo | tally | odoo | erpnext
+path = "demo_data"
+
+[channels]
+web = true               # stock search page at /
+whatsapp = true          # pulse_bi.channels.whatsapp.handle_message
+
+[whatsapp]
+# Staff numbers allowed to ask for quotes; nobody else gets a reply.
+allowed_senders = ["+91 90000 00001"]
+max_products = 5
+
+[quote]
+cache_seconds = 300
+markups = [
+    { label = "Base rate", percent = 0 },
+    { label = "Option +12%", percent = 12 },
+    { label = "Option +15%", percent = 15 },
+]
+
+[dashboard]
+local = true             # live dashboard at /dashboard
+
+[insights]
+low_margin_percent = 10
+reorder_cover_days = 14
+reorder_target_days = 30
+dead_stock_days = 30
+# margin_ignore_before = "2026-01-01"
+
+[alerts]
+recipients = ["staff@example.com"]
+
+[publish]
+# cloudflare_worker = "demo-dashboard"   # leave out to only save the pages

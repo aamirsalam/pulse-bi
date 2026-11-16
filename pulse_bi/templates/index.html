@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ business_name }} | Stock Assistant</title>
+
+    <style>
+        :root {
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --text: #202a36;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --accent: #244c68;
+            --accent-hover: #193b52;
+            --success: #18794e;
+            --success-bg: #eaf6ef;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-inner {
+            max-width: 1120px;
+            margin: auto;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .brand-name {
+            font-size: 17px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .local-status {
+            color: var(--muted);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: #299764;
+            border-radius: 50%;
+        }
+
+        main {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 42px 24px 64px;
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+        }
+
+        h1 {
+            margin: 8px 0;
+            font-size: clamp(25px, 4vw, 34px);
+            font-weight: 650;
+            letter-spacing: -1px;
+        }
+
+        .intro {
+            margin: 0;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .search-panel {
+            margin-top: 30px;
+            padding: 22px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(25, 40, 55, 0.025);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 13px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            color: var(--text);
+            background: white;
+            font: inherit;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(36, 76, 104, 0.10);
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 7px;
+            background: var(--accent);
+            color: white;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        .search-hint {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .results-heading {
+            margin: 34px 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 650;
+        }
+
+        .result-count {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .empty-state {
+            padding: 42px 20px;
+            background: var(--surface);
+            border: 1px dashed #d1d5db;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 14px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: #eef2f6;
+            color: var(--accent);
+            font-size: 21px;
+        }
+
+        .empty-title {
+            margin: 0 0 5px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .empty-copy {
+            max-width: 390px;
+            margin: auto;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .demo-card {
+            margin-top: 16px;
+            overflow: hidden;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .demo-label {
+            padding: 10px 16px;
+            background: #fff8e8;
+            border-bottom: 1px solid #f0e5c9;
+            color: #805c18;
+            font-size: 12px;
+        }
+
+        .product-info {
+            padding: 18px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .product-name {
+            margin: 0 0 5px;
+            font-size: 15px;
+            font-weight: 650;
+        }
+
+        .product-meta {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .stock-pill {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: var(--success-bg);
+            color: var(--success);
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            border-top: 1px solid var(--border);
+        }
+
+        .price-option {
+            padding: 15px 18px;
+            border-right: 1px solid var(--border);
+        }
+
+        .price-option:last-child {
+            border-right: none;
+        }
+
+        .price-label {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .price-value {
+            margin-top: 4px;
+            font-size: 18px;
+            font-weight: 650;
+        }
+
+        footer {
+            max-width: 1120px;
+            margin: auto;
+            padding: 0 24px 24px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .header-inner {
+                padding: 14px 16px;
+            }
+
+            main {
+                padding: 30px 16px 44px;
+            }
+
+            .local-status {
+                display: none;
+            }
+
+            .search-panel {
+                padding: 16px;
+            }
+
+            .search-row {
+                flex-direction: column;
+            }
+
+            .search-row button {
+                width: 100%;
+            }
+
+            .product-info {
+                flex-direction: column;
+            }
+
+            .price-option {
+                padding: 12px 10px;
+            }
+
+            .price-value {
+                font-size: 15px;
+            }
+
+            .price-label {
+                font-size: 11px;
+            }
+
+            footer {
+                padding: 0 16px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-mark">LA</div>
+                <div>
+                    <div class="brand-name">{{ business_name }}</div>
+                    <div class="brand-subtitle">Stock &amp; Quotation Assistant</div>
+                </div>
+            </div>
+
+            <div class="local-status">
+                <span class="status-dot"></span>
+                Local application
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="eyebrow">Sales workspace</div>
+        <h1>Find the right product.</h1>
+        <p class="intro">
+            Search stock, compare available variants and prepare a quotation.
+        </p>
+
+        <section class="search-panel">
+            <form action="/" method="get">
+                <label for="enquiry">Customer enquiry</label>
+
+                <div class="search-row">
+                    <input
+                        id="enquiry"
+                        name="q"
+                        type="text"
+                        placeholder="e.g. 20 pieces of 1 1/2 x 1 A/R"
+                        value="{{ query }}"
+                        autocomplete="off"
+                    >
+                    <button type="submit">Search stock</button>
+                </div>
+                
+                <p class="search-hint">
+                    Enter a product name, size or customer requirement.
+                    Confirm the correct variant before quoting.
+                </p>
+            </form>
+        </section>
+
+
+        <div class="results-heading">
+            <h2>Product results</h2>
+            <span class="result-count">
+                {% if query %}
+                {% if results and results.status == "exact" %}
+                Exact match
+                {% elif results and results.status == "review" %}
+                {{ results.matches|length }} candidates to review
+                {% elif results and results.status == "no_match" %}
+                No matches
+                {% else %}
+                Search complete
+                {% endif %}
+                {% else %}
+                Awaiting search
+                {% endif %}
+            </span>
+        </div>
+
+
+
+        {% if error %}
+        <section class="empty-state">
+            <p class="empty-title">Unable to load inventory</p>
+            <p class="empty-copy">{{ error }}</p>
+        </section>
+
+        {% elif not query %}
+        <section class="empty-state">
+            <div class="empty-icon">&#9906;</div>
+            <p class="empty-title">Search your inventory</p>
+            <p class="empty-copy">
+                Enter a product name or dimensions above to find matching
+                stock items and review their pricing.
+            </p>
+        </section>
+
+        {% elif results and results.status == "no_match" %}
+        <section class="empty-state">
+            <p class="empty-title">No matching products found</p>
+            <p class="empty-copy">
+                Try a different product name or check the dimensions.
+            </p>
+        </section>
+
+        {% elif results %}
+        {% for product in products %}
+        <section class="demo-card">
+            {% if results.status == "review" %}
+            <div class="demo-label">
+                Candidate {{ loop.index }} — confirm the correct variant before quoting
+            </div>
+            {% endif %}
+
+            <div class="product-info">
+                <div>
+                    <p class="product-name">{{ product.name }}</p>
+                    <div class="product-meta">
+                        Ref: {{ product.ref }}
+                    </div>
+                </div>
+
+                {% if product.stock is none %}
+                <span class="stock-pill" style="background:#fff3e8;color:#9a4d00">
+                    Stock unavailable
+                </span>
+                {% elif product.stock < 0 %} <span class="stock-pill" style="background:#fdecec;color:#a12626">
+                    Stock discrepancy
+                    </span>
+                    {% else %}
+                    <span class="stock-pill">
+                        Closing stock: {{ product.stock }}
+                    </span>
+                    {% endif %}
+            </div>
+
+            {% if product.shortage %}
+            <div class="demo-label">
+                Requested quantity exceeds stock by {{ product.shortage_by }}.
+                Confirm availability manually before quoting.
+            </div>
+            {% endif %}
+
+            {% if product.price_issue %}
+            <div class="demo-label">
+                Price missing or invalid. Manual review required; prices withheld.
+            </div>
+            {% elif product.stock_issue %}
+            <div class="demo-label">
+                Stock requires review. Prices withheld until verified.
+            </div>
+            {% else %}
+            <div class="price-grid">
+                {% for price in product.prices %}
+                <div class="price-option">
+                    <div class="price-label">{{ price.label }}</div>
+                    <div class="price-value">
+                        {{ cur }}{{ price.value|inr(2) }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% endfor %}
+        {% endif %}
+
+    </main>
+
+    <footer>
+        Internal sales tool · Verify stock and pricing before confirming a quotation.
+    </footer>
+</body>
+
+</html>

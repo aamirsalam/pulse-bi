@@ -1,0 +1,71 @@
+{% from "_macros.html" import qty, ageing_bar %}
+{% set cfg = insights.settings %}
+
+{# ----------------------------------------------------------- Stock health #}
+{% set s = insights.stock %}
+<section class="section" id="stock-health">
+    <div class="section-title-row">
+        <h2>Stock Value</h2>
+        <span class="muted">As of {{ insights.today.strftime("%d %b") }}</span>
+    </div>
+
+    <div class="cards cards-3">
+        <div class="card">
+            <div class="card-label">Stock at Cost</div>
+            <div class="card-value">{{ cur }}{{ s.value|inr }}</div>
+            <div class="card-note">Before {{ tax_name }}{% if s.uncosted_items %}<br>{{ s.uncosted_items }} items have no cost{% endif %}</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Lasts About</div>
+            <div class="card-value">{% if s.cover_days %}{{ '%.0f'|format(s.cover_days) }} days{% else %}n/a{% endif %}</div>
+            <div class="card-note">At the last 30 days’ sales pace</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Not Moving</div>
+            <div class="card-value">{{ cur }}{{ s.dead_value|inr }}</div>
+            <div class="card-note">{{ s.dead_count }} items, {{ '%.0f'|format(s.dead_share) }}% of stock value</div>
+        </div>
+    </div>
+
+    <p class="empty">
+        {{ total_items }} products: {{ positive_stock }} in stock, {{ zero_stock }} at zero
+        and {{ negative_stock }} below zero{% if negative_stock %} (listed at the bottom of the page){% endif %}.
+    </p>
+
+    <p class="empty">
+        Not moving = in stock, no sale in the last {{ cfg.dead_stock_days }} days and not bought in that time
+        ({{ s.new_arrivals }} newer arrivals left out). {{ s.never_sold }} of these items haven’t sold at all since
+        sales records began{% if s.first_sale %} on {{ s.first_sale.strftime("%d %b") }}{% endif %}.
+    </p>
+
+    {% macro dead_row(item) %}
+        <div class="list-row">
+            <div class="list-main">
+                <div class="list-name">{{ item.name }}</div>
+                <div class="list-meta">
+                    {{ qty(item.stock) }} in stock,
+                    {% if item.last_sold %}last sold {{ item.last_sold.strftime("%d %b") }}{% else %}not sold yet{% endif %}{% if item.last_bought %},
+                    bought {{ item.last_bought.strftime("%d %b") }}{% endif %}
+                </div>
+            </div>
+            <div class="list-side">
+                <div class="list-value">{% if item.value is not none %}{{ cur }}{{ item.value|inr }}{% else %}no cost{% endif %}</div>
+            </div>
+        </div>
+    {% endmacro %}
+
+    {% if s.dead_items %}
+    <h3 class="control-label">Most money tied up</h3>
+    <div class="list">
+        {% for item in s.dead_items[:10] %}{{ dead_row(item) }}{% endfor %}
+    </div>
+    {% if s.dead_items|length > 10 %}
+    <details class="more">
+        <summary>Show all {{ s.dead_items|length }} items</summary>
+        <div class="list">
+            {% for item in s.dead_items[10:] %}{{ dead_row(item) }}{% endfor %}
+        </div>
+    </details>
+    {% endif %}
+    {% endif %}
+</section>

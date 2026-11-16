@@ -1,0 +1,39 @@
+# A LUX (Access .mdb) customer. Copy to customers/<name>.toml and fill in.
+
+[business]
+name = "Your Business"
+currency_symbol = "₹"
+tax_name = "GST"
+
+[source]
+type = "lux"
+database = 'C:\lux\Lux\2026-27.mdb'   # LUX starts a new file each financial year
+# sqlite = "output/lux.sqlite"         # instead, on Linux: a copy made by pulse_bi.sources.lux.sqlite_copy
+# Quotations price from LUX's stock report export (column P/Rate+Tax), made
+# with tools/import_stock_report.py. Without it, quotes use the average
+# purchase cost before tax, which hasn't been checked against the export.
+catalogue_csv = "data/inventory_import.csv"
+debtors_group = 20                     # Account.GrpId of Sundry Debtors
+creditors_group = 21                   # ... and Sundry Creditors
+cash_account = "CASH SALES"
+default_typed_name = "LOCAL SALES"     # LUX's default customer name on a cash bill
+
+[channels]
+web = true
+whatsapp = false
+
+[whatsapp]
+allowed_senders = []                   # staff numbers; empty = nobody gets a reply
+
+[dashboard]
+local = true
+
+[insights]
+low_margin_percent = 10
+# margin_ignore_before = "YYYY-MM-DD"  # e.g. the first days on LUX, before prices were set up
+
+[alerts]
+recipients = []
+
+[publish]
+# cloudflare_worker = "..."

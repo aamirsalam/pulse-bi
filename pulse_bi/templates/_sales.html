@@ -1,0 +1,93 @@
+{# Sales for the chosen period: figures against the previous period, the
+   daily chart and weekday averages. #}
+{% from "_macros.html" import change_badge %}
+{% set c = insights.comparison %}
+
+<section class="section">
+    <div class="section-title-row">
+        <h2>Sales</h2>
+        <span class="muted">
+            {{ c.label }}{% if c.start %}, {{ c.start.strftime("%d %b") }} to {{ c.end.strftime("%d %b %Y") }}{% endif %}
+        </span>
+    </div>
+    {% if c.previous and not c.previous_partial %}
+    <p class="empty">Compared with the {{ c.previous_label }}
+        ({{ c.previous_start.strftime("%d %b") }} to {{ c.previous_end.strftime("%d %b") }})</p>
+    {% elif c.previous_partial %}
+    <p class="empty">No % change: sales records start on {{ c.records_start.strftime("%d %b") }}, so the
+        {{ c.previous_label }} are only partly recorded.</p>
+    {% elif c.no_previous %}
+    <p class="empty">No sales recorded before this period to compare with.</p>
+    {% endif %}
+
+    <div class="cards cards-kpi">
+        <div class="card">
+            <div class="card-label">Net Sales</div>
+            <div class="card-value">{{ cur }}{{ c.current.net_sales|inr }}</div>
+            <div class="card-note">{{ change_badge(c.change.net_sales) }}
+                {% if c.previous and not c.previous_partial %}was {{ cur }}{{ c.previous.net_sales|inr }}{% endif %}</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Gross Profit</div>
+            <div class="card-value {{ 'profit-negative' if c.current.profit < 0 else 'profit-positive' }}">
+                {{ cur }}{{ c.current.profit|inr }}</div>
+            <div class="card-note">{{ change_badge(c.change.profit) }}
+                {% if c.previous and not c.previous_partial %}was {{ cur }}{{ c.previous.profit|inr }}{% endif %}</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Margin</div>
+            <div class="card-value">{{ "{:.1f}".format(c.current.margin) }}%</div>
+            <div class="card-note">{{ change_badge(c.change.margin, points=True) }}
+                {% if c.previous and not c.previous_partial %}was {{ "{:.1f}".format(c.previous.margin) }}%{% endif %}</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Avg Bill Value</div>
+            <div class="card-value">{{ cur }}{{ c.current.avg_invoice|inr }}</div>
+            <div class="card-note">{{ change_badge(c.change.avg_invoice) }}
+                {{ c.current.invoices }} bills over {{ c.current.selling_days }} selling days</div>
+        </div>
+    </div>
+    <p class="empty">
+        Credit sales are {{ "{:.0f}".format(c.current.credit_share) }}% of this period’s sales.
+        Profit = sales before {{ tax_name }} minus the cost before {{ tax_name }}.
+        {% if profit_fallback_lines %}{{ profit_fallback_lines }} invoice lines are for items with no purchase bill and use the item’s P/Rate.{% endif %}
+        {% if profit_missing_lines %}{{ profit_missing_lines }} lines ({{ cur }}{{ profit_missing_sales|inr }} sales) have no purchase rate and are left out.{% endif %}
+    </p>
+
+    {% if daily_sales %}
+    <h3 class="control-label">Sales by day</h3>
+    {# The chart shows the same days as the figures above: data-days is the
+       period's length, 0 for all history. #}
+    <div id="sales-chart" class="sales-chart"
+        data-days="{{ 0 if top_products_period == 'all' else ((c.end - c.start).days + 1) }}">
+        {% for day in daily_sales|reverse %}
+        <div class="sales-bar" data-date="{{ day.date.strftime('%Y-%m-%d') }}"
+            data-invoice-count="{{ day.invoice_count }}"
+            data-profit="{{ day.profit }}" data-sales-ex-tax="{{ day.sales_ex_tax }}"
+            title="{{ day.date.strftime('%d %b %Y') }}: {{ cur }}{{ day.net_sales|inr }}">
+            <div data-amount="{{ day.net_sales }}" class="bar-fill">
+            </div>
+            <span class="bar-label">
+                {{ day.date.strftime('%d %b') }}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="empty">Tap a day for its figures.</p>
+    <div id="sales-day-detail" class="empty day-detail">
+    </div>
+    {% endif %}
+
+    {% if insights.weekdays %}
+    <h3 class="control-label">Average sales by weekday, all history</h3>
+    <div class="weekday-grid">
+        {% for day in insights.weekdays %}
+        <div class="weekday {% if day.best %}best{% endif %}" title="{{ cur }}{{ day.average|inr }} on an average {{ day.day }}">
+            <div class="weekday-track"><div class="weekday-fill" style="height: {{ '%.0f'|format(day.share) }}%"></div></div>
+            <div class="weekday-name">{{ day.day }}</div>
+            <div class="weekday-value">{% if day.average %}{{ cur }}{{ (day.average / 1000)|round(0)|int }}k{% else %}none{% endif %}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
