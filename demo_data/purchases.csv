@@ -1,0 +1,19 @@
+date,party_id,supplier,net,is_return
+2026-09-07,S03,Unity Panels,20362.39,False
+2026-09-14,S01,Coastal Aluminium Traders,12517.07,False
+2026-09-21,S02,Prime Hardware Distributors,61775.34,False
+2026-09-21,S03,Unity Panels,18398.89,False
+2026-09-28,S01,Coastal Aluminium Traders,23906.17,False
+2026-09-28,S02,Prime Hardware Distributors,35360.61,False
+2026-09-28,S03,Unity Panels,3275.48,False
+2026-10-05,S01,Coastal Aluminium Traders,12627.89,False
+2026-10-05,S02,Prime Hardware Distributors,24120.45,False
+2026-10-05,S03,Unity Panels,17731.35,False
+2026-10-12,S01,Coastal Aluminium Traders,9936.74,False
+2026-10-12,S02,Prime Hardware Distributors,47050.51,False
+2026-10-12,S03,Unity Panels,45876.11,False
+2026-10-19,S01,Coastal Aluminium Traders,32010.1,False
+2026-10-19,S02,Prime Hardware Distributors,25120.35,False
+2026-10-26,S01,Coastal Aluminium Traders,25197.09,False
+2026-10-26,S02,Prime Hardware Distributors,50353.07,False
+2026-10-26,S03,Unity Panels,24389.17,False

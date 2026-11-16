@@ -126,7 +126,7 @@ def validate(data):
             problems.append(f"{key}: missing or not a list")
             continue
         fields = row_type.__annotations__
-        for index, row in enumerate(rows[:200]):  # a sample is enough
+        for index, row in enumerate(rows[:200]):  # a sample is enough for the shape
             missing = [name for name in fields if name not in row]
             if missing:
                 problems.append(f"{key}[{index}]: missing {', '.join(missing)}")
@@ -134,9 +134,10 @@ def validate(data):
             if "date" in fields and not isinstance(row["date"], date):
                 problems.append(f"{key}[{index}]: date is {type(row['date']).__name__}, not date")
                 break
-            if row.get("is_return") and row_type in (SalesLine, Bill, Purchase):
+        if row_type in (SalesLine, Bill, Purchase):
+            for index, row in enumerate(rows):
                 value = row.get("qty", row.get("net"))
-                if value is not None and value > 0:
+                if row.get("is_return") and value is not None and value > 0:
                     problems.append(f"{key}[{index}]: a return must have a negative quantity or amount")
                     break
     if problems:

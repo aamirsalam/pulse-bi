@@ -1,0 +1,35 @@
+date,item_code,supplier,taxable,qty
+2026-09-07,D201,Unity Panels,17256.26,6
+2026-09-14,M600,Coastal Aluminium Traders,10607.69,8
+2026-09-21,A101,Prime Hardware Distributors,18253.3,35
+2026-09-21,S400,Prime Hardware Distributors,21998.33,15
+2026-09-21,W500,Prime Hardware Distributors,12100.35,12
+2026-09-21,A102,Unity Panels,15592.28,25
+2026-09-28,A100,Coastal Aluminium Traders,20259.47,50
+2026-09-28,D200,Prime Hardware Distributors,23583.87,9
+2026-09-28,H303,Prime Hardware Distributors,6382.75,10
+2026-09-28,H304,Unity Panels,2775.83,30
+2026-10-05,M600,Coastal Aluminium Traders,10701.6,8
+2026-10-05,H300,Prime Hardware Distributors,8515.2,225
+2026-10-05,W500,Prime Hardware Distributors,11925.86,12
+2026-10-05,A102,Unity Panels,15026.57,25
+2026-10-12,H302,Coastal Aluminium Traders,4456.51,38
+2026-10-12,K701,Coastal Aluminium Traders,3964.46,62
+2026-10-12,A101,Prime Hardware Distributors,18028.14,35
+2026-10-12,S400,Prime Hardware Distributors,21845.17,15
+2026-10-12,D201,Unity Panels,17217.03,6
+2026-10-12,H301,Unity Panels,3138.58,75
+2026-10-12,H304,Unity Panels,2903.59,30
+2026-10-12,S401,Unity Panels,10299.52,5
+2026-10-12,K700,Unity Panels,5319.34,25
+2026-10-19,A100,Coastal Aluminium Traders,20473.63,50
+2026-10-19,D202,Coastal Aluminium Traders,6653.57,2
+2026-10-19,S400,Prime Hardware Distributors,21288.43,15
+2026-10-26,D202,Coastal Aluminium Traders,6597.91,2
+2026-10-26,M600,Coastal Aluminium Traders,10616.26,8
+2026-10-26,K701,Coastal Aluminium Traders,4139.3,62
+2026-10-26,D200,Prime Hardware Distributors,24563.83,9
+2026-10-26,H303,Prime Hardware Distributors,6619.69,10
+2026-10-26,W500,Prime Hardware Distributors,11488.57,12
+2026-10-26,A102,Unity Panels,15263.39,25
+2026-10-26,K700,Unity Panels,5405.4,25

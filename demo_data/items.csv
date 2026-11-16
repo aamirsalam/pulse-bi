@@ -1,0 +1,25 @@
+code,name,stock,unit_cost,cost_source
+A100,"Aluminium angle 1 x 1 in, 12 ft",36.0,407.331,bill
+A101,"Aluminium angle 1 1/2 x 1 in, 12 ft",-2.0,518.3063,bill
+A102,"Aluminium square tube 1 in, 12 ft",23.0,611.7632,bill
+A103,"Aluminium channel 3/4 in, 12 ft",4.0,380.0,item
+D200,"PVC door 30 x 78 in, white",10.0,2674.8722,bill
+D201,"PVC door 32 x 80 in, grey",3.0,2872.7742,bill
+D202,Flush door 30 x 78 in,1.0,3312.87,bill
+H300,Steel hinge 4 in (pair),123.0,37.8453,bill
+H301,Tower bolt 6 in,21.0,41.8477,bill
+H302,"Door handle, steel",17.0,117.2766,bill
+H303,Mortise lock set,7.0,650.122,bill
+H304,Pop rivets 4 mm (box of 100),16.0,94.657,bill
+H305,Self-drilling screws 1 in (box),-44.0,160.0,item
+S400,"PVC sheet 8 x 4 ft, 5 mm",6.0,1447.3762,bill
+S401,"ACP sheet 8 x 4 ft, 3 mm",2.0,2059.904,bill
+S402,Polycarbonate sheet 8 x 4 ft,9.0,1900.0,item
+W500,"Wall panel 8 x 4 ft, oak",13.0,986.5217,bill
+W501,"Wall panel 8 x 4 ft, marble look",-41.0,1150.0,item
+M600,Mosquito net roll 4 ft,11.0,1330.2313,bill
+M601,Mosquito net frame kit,-4.0,,none
+K700,Kitchen drawer channel 18 in,33.0,214.4948,bill
+K701,Cabinet handle 6 in,57.0,65.3529,bill
+L800,Aluminium ladder 6 ft,2.0,2400.0,item
+L801,Aluminium ladder 8 ft,3.0,3200.0,item
