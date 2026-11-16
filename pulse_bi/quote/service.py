@@ -37,10 +37,12 @@ def price_item(item, requested_quantity=None, options=DEFAULT_OPTIONS):
     return product
 
 
-def quote(text, catalogue, options=DEFAULT_OPTIONS):
+def quote(text, catalogue, options=DEFAULT_OPTIONS, requested_quantity=None):
+    """requested_quantity overrides a quantity read from the text (e.g. one
+    the enquiry parser found elsewhere in the message)."""
     query = (text or "").strip()
     result = find_matches(query, catalogue) if query else {"status": "no_match", "matches": []}
-    requested = extract_requested_quantity(query)
+    requested = requested_quantity if requested_quantity is not None else extract_requested_quantity(query)
     return {
         "query": query,
         "status": result["status"],
@@ -67,5 +69,5 @@ class Quoter:
             self._loaded_at = time.monotonic()
         return self._catalogue
 
-    def quote(self, text):
-        return quote(text, self.catalogue(), self.options)
+    def quote(self, text, requested_quantity=None):
+        return quote(text, self.catalogue(), self.options, requested_quantity)

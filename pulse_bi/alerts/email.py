@@ -340,10 +340,16 @@ def send(customer, subject, body):
     return recipients
 
 
-def run(customer, dry_run=False, today=None):
+def run(customer, dry_run=False, today=None, force=False):
     """Check, build the email, and (unless dry_run) send it and remember the bills.
-    Returns (subject, preview path)."""
+    Returns (subject, preview path), or (None, None) when an email already
+    went out today (so a scheduler can run this hourly; force sends anyway)."""
     today = today or date.today()
+    state_path = Path(customer.section("alerts").get("state_file") or customer.output_dir("alerts_state.json"))
+    state = load_state(state_path)
+    if not dry_run and not force and state and state.get("last_sent", "")[:10] == today.isoformat():
+        return None, None
+
     data = customer.source.load()
     bill_lines = [line for line in data["sales_lines"] if not line["is_return"]]
 
@@ -352,8 +358,6 @@ def run(customer, dry_run=False, today=None):
     reorder = engine.reorder_alerts(data["items"], data["sales_lines"],
                                     engine.last_purchases(data["purchase_lines"]), latest, customer.settings)
 
-    state_path = Path(customer.section("alerts").get("state_file") or customer.output_dir("alerts_state.json"))
-    state = load_state(state_path)
     ids = new_bills(bill_lines, state, today, customer.settings.margin_ignore_before)
     problems = check_bills(bill_lines, ids, customer.settings)
     problems["bill_count"] = len(ids)

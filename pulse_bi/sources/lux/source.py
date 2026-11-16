@@ -113,8 +113,9 @@ class LuxSource(Source):
         self.creditors_group = config.get("creditors_group", 21)
         self.cash_account = config.get("cash_account", "CASH SALES").upper()
         self.default_typed_name = config.get("default_typed_name", "LOCAL SALES").upper()
-        # Quotations price from LUX's stock report export (P/Rate+Tax) until
-        # live rates are checked against it; see quote_catalogue in the config.
+        # Quotations price from LUX's stock report export (P/Rate+Tax, the
+        # cost including tax). Without it prices are withheld: live rates
+        # haven't been checked against the export yet.
         self.catalogue_csv = config.get("catalogue_csv")
 
     # ------------------------------------------------------------------

@@ -9,9 +9,9 @@ tax_name = "GST"
 type = "lux"
 database = 'C:\lux\Lux\2026-27.mdb'   # LUX starts a new file each financial year
 # sqlite = "output/lux.sqlite"         # instead, on Linux: a copy made by pulse_bi.sources.lux.sqlite_copy
-# Quotations price from LUX's stock report export (column P/Rate+Tax), made
-# with tools/import_stock_report.py. Without it, quotes use the average
-# purchase cost before tax, which hasn't been checked against the export.
+# Quotations price from LUX's stock report export (column P/Rate+Tax, the
+# cost including tax), made with tools/import_stock_report.py. Without it,
+# quotes show stock but withhold prices.
 catalogue_csv = "data/inventory_import.csv"
 debtors_group = 20                     # Account.GrpId of Sundry Debtors
 creditors_group = 21                   # ... and Sundry Creditors

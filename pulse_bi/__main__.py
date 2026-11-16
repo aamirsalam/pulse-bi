@@ -7,7 +7,8 @@
     python -m pulse_bi [--customer NAME] serve [--port N]   web server (search page, live dashboard)
     python -m pulse_bi [--customer NAME] publish [--no-deploy]
                                                             static dashboard (and upload if configured)
-    python -m pulse_bi [--customer NAME] alerts [--dry-run] staff alert email
+    python -m pulse_bi [--customer NAME] alerts [--dry-run] [--force]
+                                                            staff alert email, at most once a day
 
 NAME is a file in customers/ (default: demo, or PULSE_CUSTOMER).
 """
@@ -36,6 +37,7 @@ def main(argv=None):
     publish.add_argument("--no-deploy", action="store_true")
     alerts = commands.add_parser("alerts")
     alerts.add_argument("--dry-run", action="store_true")
+    alerts.add_argument("--force", action="store_true", help="send even if one went out today")
     args = parser.parse_args(argv)
 
     customer = Customer.load(args.customer)
@@ -74,7 +76,10 @@ def main(argv=None):
 
     elif args.command == "alerts":
         from .alerts.email import run
-        subject, preview = run(customer, dry_run=args.dry_run)
+        subject, preview = run(customer, dry_run=args.dry_run, force=args.force)
+        if subject is None:
+            print("An alert email already went out today (use --force to send another).")
+            return
         print(subject)
         print(f"Preview: {preview}" + (" (dry run: nothing sent)" if args.dry_run else ""))
 

@@ -77,3 +77,14 @@ def test_bill_checks_find_the_sale_below_cost(customer, demo_data):
     assert {row["item"] for row in problems["below_cost"]} == {"Flush door 30 x 78 in", "Steel hinge 4 in (pair)"}
     assert [row["item"] for row in problems["unusual"]] == ["Steel hinge 4 in (pair)"]
     assert problems["no_cost"]
+
+
+def test_alert_email_goes_out_once_a_day(customer, tmp_path, monkeypatch):
+    state = tmp_path / "state.json"
+    state.write_text('{"last_sent": "2026-11-01T09:00:00", "reported": {}}', encoding="utf-8")
+    customer.raw.setdefault("alerts", {})["state_file"] = str(state)
+    sent = []
+    monkeypatch.setattr(alerts, "send", lambda *args: sent.append(args))
+    assert alerts.run(customer, today=date(2026, 11, 1)) == (None, None)
+    alerts.run(customer, today=date(2026, 11, 2))
+    assert len(sent) == 1

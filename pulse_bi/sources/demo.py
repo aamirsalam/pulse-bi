@@ -10,10 +10,12 @@ YYYY-MM-DD; blank unit_cost / customer mean None.
 [source]
 type = "demo"
 path = "demo_data"       # folder with the CSVs, relative to the repo
+tax_percent = 18         # quotes price from unit_cost plus this tax; leave out to withhold prices
 """
 
 import csv
 from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 from ..model import REQUIRED, validate
@@ -55,3 +57,17 @@ class DemoSource(Source):
                 ]
         data["checked_at"] = datetime.fromtimestamp((self.folder / "bills.csv").stat().st_mtime).astimezone()
         return validate(data)
+
+    def load_catalogue(self, data=None):
+        """Price base = cost before tax plus [source] tax_percent, i.e. the
+        cost including tax; without tax_percent, prices are withheld."""
+        catalogue = super().load_catalogue(data)
+        tax = self.config.get("tax_percent")
+        if tax is None:
+            return catalogue
+        costs = {item["code"]: item["unit_cost"] for item in (data or self.load())["items"]}
+        for entry in catalogue:
+            cost = costs.get(entry["ref"])
+            if cost is not None:
+                entry["rate"] = Decimal(str(round(cost * (1 + tax / 100), 4)))
+        return catalogue

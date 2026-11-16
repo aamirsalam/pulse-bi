@@ -28,17 +28,16 @@ class Source:
     def load_catalogue(self, data=None):
         """Sellable items for quotations: a list of pulse_bi.model.CatalogueItem.
 
-        The default uses load()'s items: stock on hand, and the cost per
-        unit before tax as the price base. A source whose system has a
-        better price base (cost including tax, a price list) overrides this.
+        The quote's options are the rate plus markups, so the rate must be
+        the item's cost INCLUDING tax (or a price list's base price). The
+        contract's unit_cost is before tax, so it can't be used as is: +12%
+        on a cost before 18% GST quotes below the real cost. By default the
+        rate is None, which withholds prices; a source sets it from its
+        system's tax-inclusive cost or price list (see DemoSource and the
+        LUX stock report CSV).
         """
         data = data or self.load()
         return [
-            {
-                "name": item["name"],
-                "ref": item["code"],
-                "stock": Decimal(str(item["stock"])),
-                "rate": None if item["unit_cost"] is None else Decimal(str(round(item["unit_cost"], 4))),
-            }
+            {"name": item["name"], "ref": item["code"], "stock": Decimal(str(item["stock"])), "rate": None}
             for item in data["items"]
         ]

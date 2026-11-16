@@ -10,6 +10,7 @@ tax_name = "GST"
 [source]
 type = "demo"            # lux | demo | tally | odoo | erpnext
 path = "demo_data"
+tax_percent = 18         # quotes price from cost + 18% tax (the cost including tax)
 
 [channels]
 web = true               # stock search page at /
