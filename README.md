@@ -79,6 +79,8 @@ databases, exports and run state stay out of git (see `.gitignore`).
 
 ## WhatsApp integration
 
+Start here: [docs/whatsapp-integration.md](docs/whatsapp-integration.md) (partial checkout, setup, Meta test number, where the code goes).
+
 The quoting side is done; the integration is the transport around this call:
 
 ```python
