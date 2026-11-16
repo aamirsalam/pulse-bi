@@ -1,0 +1,4 @@
+flask>=3.0
+openpyxl>=3.1      # tools/import_stock_report.py
+pytest>=8          # tests
+# pyodbc>=5        # Windows only: the LUX source reading an .mdb directly
